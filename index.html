@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building with AI: what matters</title>
+<meta name="description" content="Personal notes: what matters from three Claude Code videos, checked against the official docs, and how to apply it to a new or existing project.">
+<style>
+  :root {
+    --bg: #fbfaf7; --surface: #ffffff; --ink: #1d1d1f; --muted: #5f6368; --line: #e4e1da;
+    --accent: #c4552d; --adopt: #1f7a4d; --adopt-bg: #e3f3ea;
+    --adapt: #9a6a00; --adapt-bg: #fbf0d2; --skip: #8a3b3b; --skip-bg: #f6e3e3;
+    --code-bg: #f3f1ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151515; --surface: #1f1f1f; --ink: #ecebe7; --muted: #a3a29c; --line: #333330;
+      --accent: #e8825a; --adopt: #6fd0a0; --adopt-bg: #173325; --adapt: #e6b84d; --adapt-bg: #3a2f10;
+      --skip: #e49a9a; --skip-bg: #3a1f1f; --code-bg: #262624;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151515; --surface: #1f1f1f; --ink: #ecebe7; --muted: #a3a29c; --line: #333330;
+    --accent: #e8825a; --adopt: #6fd0a0; --adopt-bg: #173325; --adapt: #e6b84d; --adapt-bg: #3a2f10;
+    --skip: #e49a9a; --skip-bg: #3a1f1f; --code-bg: #262624;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 64px; }
+  header { padding: 56px 0 24px; }
+  .kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.15; margin: 8px 0 12px; letter-spacing: -.02em; }
+  .lede { font-size: 19px; color: var(--muted); margin: 0; }
+  h2 { font-size: 26px; margin: 56px 0 8px; letter-spacing: -.01em; }
+  h2 + p.sub { margin: 0 0 20px; color: var(--muted); }
+  .note {
+    background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 14px 16px; margin: 24px 0; font-size: 15.5px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 18px 14px; margin: 14px 0;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 19px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .num { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .card p { margin: 6px 0; }
+  .src { font-size: 14px; color: var(--muted); }
+  .badge {
+    font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .adopt { color: var(--adopt); background: var(--adopt-bg); }
+  .adapt { color: var(--adapt); background: var(--adapt-bg); }
+  .skip  { color: var(--skip);  background: var(--skip-bg); }
+  .suggest { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .suggest b { color: var(--accent); }
+  ul.plain { padding-left: 20px; margin: 8px 0; }
+  ul.plain li { margin: 4px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 12px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .tablewrap { overflow-x: auto; }
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 12px 0; }
+  .steps li { counter-increment: s; position: relative; padding: 4px 0 4px 38px; margin: 6px 0; }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 4px; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 14px; font-weight: 700; display: grid; place-items: center;
+  }
+  .two { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 720px) { .two.wide { grid-template-columns: 1fr 1fr; } .wrap { padding-bottom: 96px; } }
+  .promptbox { position: relative; background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 14px 12px; margin: 10px 0; }
+  .promptbox pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .copy {
+    position: absolute; top: 8px; right: 8px; font: inherit; font-size: 13px; cursor: pointer;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px;
+  }
+  .copy:hover { border-color: var(--accent); }
+  .promptbox pre { padding-top: 22px; }
+  .tag { font-size: 13px; color: var(--muted); }
+  code { background: var(--code-bg); padding: 1px 6px; border-radius: 4px; font-size: .92em; }
+  a { color: var(--accent); }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+  #theme { position: fixed; top: 12px; right: 12px; font: inherit; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+</style>
+</head>
+<body>
+<button id="theme" type="button" aria-label="Toggle light and dark theme">Theme</button>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Building with AI · notes v0.1</div>
+  <h1>What matters from three Claude Code videos</h1>
+  <p class="lede">Distilled, checked against the official docs, and turned into one way to start. Personal notes: nothing here is adopted until I've tried it.</p>
+</header>
+
+<div class="note">
+  <b>How to read this.</b> The three sources are creator videos, read through auto-generated captions, so they are
+  opinion, not evidence. Where a claim could be tested, I checked it against the
+  <a href="https://code.claude.com/docs">Claude Code docs</a> (Claude Code 2.1.317). Each point carries a verdict:
+  <span class="badge adopt">adopt</span> try it now,
+  <span class="badge adapt">adapt</span> useful with a change,
+  <span class="badge skip">skip</span> not for me.
+</div>
+
+<h2>The six points that matter</h2>
+<p class="sub">Ordered by how much they should change daily work.</p>
+
+<div class="card">
+  <h3><span class="num">1</span> Interview first, then specify <span class="badge adopt">adopt</span></h3>
+  <p>Before any spec or code, have Claude interview you one question at a time until the real goal is clear. The task ("write a report") is not the goal ("decide X").</p>
+  <p class="src">Video 2 (layer 1) and video 3 (<code>grill-with-docs</code>).</p>
+  <div class="suggest"><b>Suggest:</b> use it for new projects and new features, not for small fixes. It fits an existing "plan before building" habit by moving the thinking earlier.</div>
+</div>
+
+<div class="card">
+  <h3><span class="num">2</span> Say how you will verify, before building <span class="badge adopt">adopt</span></h3>
+  <p>Define what "done" looks like in checkable terms, then give Claude a way to run the check: tests, a build, the deployed result. The strongest idea across all three videos, and it comes with a primary source: Boris Cherny's post says a feedback loop can improve the result 2–3×.</p>
+  <p class="src">Video 2 (layer 2). The "2–3×" figure is his claim, not a measurement of mine.</p>
+  <div class="suggest"><b>Suggest:</b> every spec gets a required "How we verify" section. No criteria, no build.</div>
+</div>
+
+<div class="card">
+  <h3><span class="num">3</span> Enforce what must hold with hooks, not prose <span class="badge adopt">adopt</span></h3>
+  <p><code>CLAUDE.md</code> is advice. The docs call it "context, not enforced configuration". A <code>PreToolUse</code> hook that exits with code 2, or a permission <code>deny</code> rule, actually blocks the action.</p>
+  <p class="src">Video 2 (layer 3). Confirmed in the hooks and memory docs.</p>
+  <div class="suggest"><b>Suggest:</b> a short never / ask-first / always list per project, with hooks only for the never items (secrets, production).</div>
+</div>
+
+<div class="card">
+  <h3><span class="num">4</span> Review with a fresh context <span class="badge adapt">adapt</span></h3>
+  <p>An agent reviewing code it just wrote tends to approve it. A subagent starts with an empty context and sees only what you hand it, so its review is more independent. A second model (the video's Codex plugin) goes further but is a third-party tool that the Claude Code docs don't mention.</p>
+  <p class="src">Video 3 and video 2. Subagent behaviour confirmed in the docs.</p>
+  <div class="suggest"><b>Suggest:</b> fresh-context review for larger changes only. Skip the second model for now.</div>
+</div>
+
+<div class="card">
+  <h3><span class="num">5</span> Keep each task inside one bounded session <span class="badge adapt">adapt</span></h3>
+  <p>Split big work into pieces that fit one session, and clear between them. The video's "smart zone ends around 140k tokens" is one person's experience, not a documented limit, so I don't copy the number.</p>
+  <p class="src">Video 3.</p>
+  <div class="suggest"><b>Suggest:</b> adopt the habit and measure with <code>/context</code> before believing any number.</div>
+</div>
+
+<div class="card">
+  <h3><span class="num">6</span> Skills for repeated work, kept small <span class="badge adapt">adapt</span></h3>
+  <p>A skill's description sits in context; its body loads only when used. A skill set to <code>disable-model-invocation: true</code> costs no context until you call it. Scripts inside a skill run as code, so they cost no tokens to "think". Update a skill after a mistake, but only for lessons that repeat.</p>
+  <p class="src">Video 1 and video 3. Flags and loading behaviour confirmed in the docs.</p>
+  <div class="suggest"><b>Suggest:</b> write a skill only after doing the task twice by hand. The videos push skills early; I'd rather let real repetition decide.</div>
+</div>
+
+<h2>What I'm skipping</h2>
+<ul class="plain">
+  <li><span class="badge skip">skip</span> Installing the video 3 skills repo: it needs Node and a Vercel installer for 38 skills, and I want to use less than that. Read it, write my own short versions.</li>
+  <li><span class="badge skip">skip</span> The "knowledge base as a moat" framing and big skill libraries, until real projects need them.</li>
+  <li><span class="badge skip">skip</span> Speed claims ("10×") and "Anthropic engineers do X": quotes are secondhand clips.</li>
+  <li><span class="badge skip">skip</span> The prompt "based on my recent sessions…": the docs describe no cross-session recall, so Claude would guess.</li>
+</ul>
+
+<h2>Checked against the docs</h2>
+<p class="sub">Claims I could test, and the result.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Claim</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td><code>disable-model-invocation</code> and <code>user-invocable</code> exist</td><td>Confirmed. Nuance: <code>user-invocable: false</code> hides the skill from the menu, but Claude can still use it.</td></tr>
+    <tr><td>Hooks can block edits; <code>CLAUDE.md</code> can't</td><td>Confirmed (exit code 2, or a <code>deny</code> permission rule).</td></tr>
+    <tr><td>Keep <code>CLAUDE.md</code> short</td><td>Confirmed: the docs target under 200 lines. Subdirectory files load only when Claude works there.</td></tr>
+    <tr><td>Subagents get a clean context</td><td>Confirmed: they don't see the parent's history; only a summary comes back.</td></tr>
+    <tr><td>Claude can read past sessions</td><td>Not documented. Only resuming a session, a usage report and per-project memory exist.</td></tr>
+    <tr><td>Codex plugin for second opinions</td><td>Not in the Claude Code docs: a separate OpenAI tool.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>What you can really measure</h2>
+<p class="sub">No made-up numbers: these are the things Claude Code exposes.</p>
+<ul class="plain">
+  <li><code>/context</code>: what is loaded now and how full the window is.</li>
+  <li><code>/usage</code> (aliases <code>/cost</code>, <code>/stats</code>): cost and activity, with a breakdown by skill and subagent on paid plans.</li>
+  <li>The status line can show context-used percentage live.</li>
+  <li>Session transcripts in <code>~/.claude/projects/</code> contain real per-message token counts. The format is internal and may change.</li>
+</ul>
+
+<h2>Applying it: one suggestion from Claude</h2>
+<p class="sub">Start the same way every time, depending on whether the project exists.</p>
+
+<div class="two wide">
+  <div class="card">
+    <h3>New project</h3>
+    <ol class="steps">
+      <li>Interview, no code yet.</li>
+      <li>One-page spec, with "How we verify".</li>
+      <li>Tiny <code>CLAUDE.md</code> (about 20 lines).</li>
+      <li>Build the thinnest slice, check it against the spec.</li>
+      <li>Note what worked in a journal.</li>
+    </ol>
+    <div class="promptbox">
+      <button class="copy" type="button">Copy</button>
+<pre>I want to start a new project: [one-sentence idea].
+Don't write code or a spec yet. Interview me one question at a time to find the real goal, who it is for, what is out of scope, and what "done" looks like. Challenge my assumptions and don't accept the first idea as decided.
+When we agree, write a one-page spec with a "How we verify" section (a concrete check for each requirement) and a list of open questions. If it needs more than one session to build, propose how to split it.</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Existing project</h3>
+    <ol class="steps">
+      <li>Run <code>/context</code> in a fresh session and keep the output.</li>
+      <li>Audit first, change nothing.</li>
+      <li>Fix the top findings one by one.</li>
+      <li>Re-run <code>/context</code> to see the effect.</li>
+    </ol>
+    <div class="promptbox">
+      <button class="copy" type="button">Copy</button>
+<pre>Audit how this project is set up for Claude Code. Read only: change nothing.
+Look at: the size of CLAUDE.md files and what loads at startup (here is my /context output: [paste]); rules repeated in more than one place; rules that are only advice but should be enforced by a hook or a deny rule; whether specs say how work is verified; tasks I repeat that could become a skill.
+Give the top 5 findings ranked by impact, each with the file, the problem, and a suggested fix. Don't suggest tools or structure beyond that.</pre>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Rule of thumb.</b> Add a tool, a skill, a hook or a document only when its absence has already cost me something.
+  Interview and verification apply to almost everything. The rest earns its place.
+</div>
+
+<h2>Sources</h2>
+<ul class="plain">
+  <li>Video 1, "How Anthropic Engineers ACTUALLY Prompt Claude Code" (Austin Marchese): <a href="https://www.youtube.com/watch?v=qOvc9IUKEIc">qOvc9IUKEIc</a></li>
+  <li>Video 2, "Stop Prompting Claude. Use Karpathy's Method Instead." (Austin Marchese): <a href="https://www.youtube.com/watch?v=7zZy1QTvokM">7zZy1QTvokM</a></li>
+  <li>Video 3, "mattpocock/skills: A complete AI Coding workflow, end-to-end" (Matt Pocock): <a href="https://www.youtube.com/watch?v=M6mYodf0dJM">M6mYodf0dJM</a></li>
+  <li>Claude Code docs: <a href="https://code.claude.com/docs">code.claude.com/docs</a> (skills, hooks, memory, context window, costs)</li>
+</ul>
+
+<footer>Building with AI · methodology v0.1 · personal notes, 2026-11-05. Prompts above are my own wording, adapted from the ideas in the videos.</footer>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  try { var t = localStorage.getItem('theme'); if (t) root.setAttribute('data-theme', t); } catch (e) {}
+  document.getElementById('theme').addEventListener('click', function () {
+    var dark = root.getAttribute('data-theme') === 'dark' ||
+      (!root.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+  });
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var text = b.parentNode.querySelector('pre').textContent;
+      var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, function () {}); }
+    });
+  });
+})();
+</script>
+</body>
+</html>
